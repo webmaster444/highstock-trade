@@ -16,6 +16,7 @@ $.getJSON('trades1.json', function (data) {
     
     var duration = 5;
     var data = transformJson(data,duration);     
+    
     // split the data set into ohlc and Quantity
     var ohlc = [],
         Quantity = [],
@@ -31,14 +32,6 @@ $.getJSON('trades1.json', function (data) {
 
         i = 0;
 
-    // for(var i=0;i<data.length;i++){
-    //     var timestamp1 = Date.parse(data[i]['timestamp']);
-    //     var price1 = data[i]['price'];
-    //     ohlc.push([timestamp1,price1]);
-
-    //     var qty1 = data[i]['qty'];
-    //     Quantity.push([timestamp1,qty1]);
-    // }
     for (i; i < dataLength; i += 1) {
         ohlc.push([
             data[i][0], // the date
@@ -54,8 +47,6 @@ $.getJSON('trades1.json', function (data) {
         ]);
     }
 
-    
-    // console.log(Quantity);
     // create the chart
     Highcharts.stockChart('container', {
 
@@ -134,22 +125,17 @@ function transformJson(data,duration){
 
     for(var i=minDate;i<=maxDate;i+=timestampDuration){
         var tmp = [];
-        tmp[i] = i;                
-        // res.push(tmp);        
-        // var x = i.toString();          
+        tmp[i] = i;                        
         resObj[i] = [];
 
-    }    
-    // console.log(resObj);
+    }        
     for(var i=0;i<data.length;i++){        
         var x = Date.parse(data[i]['timestamp']) - Date.parse(data[i]['timestamp']) % timestampDuration;    
         resObj[x].push(data[i]);
     }
 
     for (var key in resObj) {        
-        if(resObj[key]==''){
-            // var tmp = [key,0,0,0,0,0];            
-        }else{
+        if(resObj[key]!''){
             var tmp = getValuesFromArray(key,resObj[key]);
         }
         res.push(tmp);

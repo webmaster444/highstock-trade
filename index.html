@@ -3,18 +3,33 @@
 <meta charset="utf-8">
 </head>
 <body>
-<div id="container" style="height: 800px; min-width: 310px"></div>
+<div id="container" style="height: 800px; min-width: 310px">
+</div>
+<select id="candle_sector">
+    <option value="1min">1 Min</option>
+    <option value="5min">5 Min</option>
+    <option value="15min">15 Min</option>
+    <option value="30min">30 Min</option>
+    <option value="1hr">1 Hour</option>
+    <option value="1d">1 Day</option>
+    <option value="3d">3 Days</option>
+    <option value="1w">1 Week</option>
+    <option value="1m">1 Month</option>
+</select>
 <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
 <script src="highstock.js"></script>
 <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
 <script src="assets/themes/dark-unica.js"></script>
 
 <script>
-$.getJSON('trades1.json', function (data) {            
+$.getJSON('trades1.json', function (data) {          
+
     data.sort(custom_sort);
     
-    var duration = 5;
-    var data = transformJson(data,duration);     
+    var org_data = data;
+
+    var duration = 1;
+    var data = transformJson(data,duration);         
     // split the data set into ohlc and Quantity
     var ohlc = [],
         Quantity = [],
@@ -43,20 +58,40 @@ $.getJSON('trades1.json', function (data) {
             data[i][0], // the date
             data[i][5] // the Quantity
         ]);
+        console.log('quantity');
     }
     
-    // create the chart
-    Highcharts.stockChart('container', {
+    //move the position of zoom tools
+    // var orgHighchartsRangeSelectorPrototypeRender = Highcharts.RangeSelector.prototype.render;
+    // Highcharts.RangeSelector.prototype.render = function (min, max) {
+    //     orgHighchartsRangeSelectorPrototypeRender.apply(this, [min, max]);
+    //     var leftPosition = this.chart.plotLeft,
+    //         topPosition = this.chart.plotTop+5,
+    //         space = 2;
+    //     this.zoomText.attr({
+    //         x: leftPosition,
+    //         y: topPosition + 15
+    //     });
+    //     leftPosition += this.zoomText.getBBox().width;
+    //     for (var i = 0; i < this.buttons.length; i++) {
+    //         this.buttons[i].attr({
+    //             x: leftPosition,
+    //             y: topPosition 
+    //         });
+    //         leftPosition += this.buttons[i].width + space;
+    //     }
+    // };
 
+    // create the chart
+    var chart1 = Highcharts.stockChart('container', {
+    plotOptions: {
+        candlestick: {
+            color: 'green',
+            upColor: 'red'
+        }
+    },
         rangeSelector: {
             selected: 1,
-            buttonTheme: {
-                visibility: 'hidden'
-            },
-            labelStyle: {
-                visibility: 'hidden'
-            },
-            inputEnabled: false
         },
 
         title: {
@@ -111,6 +146,63 @@ $.getJSON('trades1.json', function (data) {
             }
         }]
     });
+
+    $('#candle_sector').change(function() {      
+      var candleV = $('#candle_sector').val();
+      switch(candleV){
+        case '1min':            
+            duration = 1;            
+            break;
+        case '5min':
+            duration = 5;
+            break;
+        case '15min':            
+            duration = 15;            
+            break;
+        case "30min":            
+            duration = 30;            
+            break;
+        case "1hr":            
+            duration = 60;            
+            break;       
+        case "1d":            
+            duration = 60 * 24;            
+            break;        
+        case "3d":            
+            duration = 60 * 24 * 3;            
+            break;        
+        case "1w":            
+            duration = 60 * 24 * 7;            
+            break;
+        case "1m":            
+            duration = 60 * 24 * 30;            
+            break;
+        default:
+            break;
+      }
+    var newData = transformJson(org_data,duration);
+
+    var new_ohlc = [];
+    var new_qty = [];
+    for (var i=0; i < newData.length; i += 1) {
+        new_ohlc.push([
+            newData[i][0], // the date
+            newData[i][1], // open
+            newData[i][2], // high
+            newData[i][3], // low
+            newData[i][4] // close
+        ]);
+
+        new_qty.push([
+            newData[i][0], // the date
+            newData[i][5] // the Quantity
+        ]);        
+    }
+      chart1.series[0].setData(new_ohlc);
+      chart1.series[1].setData(new_qty);
+    });
+    
+    $('.highcharts-range-selector-group').attr('transform',"translate(60,37)");
 });
 
 function transformJson(data,duration){
@@ -152,7 +244,7 @@ function getValuesFromArray(startTime,tmpArray){
     var openValue,highValue,closeValue,lowValue;        
 
     var priceArray = tmpArray.map(function(el){return el.price});
-    console.log(priceArray);
+    
     var lowestPrice = Math.min(...priceArray);
     var highestPrice = Math.max(...priceArray);
 

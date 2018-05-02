@@ -37,7 +37,8 @@ $.getJSON('trades1.json', function (data) {
     var org_data = data;
 
     var duration = 1;
-    var data = transformJson(data,duration);         
+    var data = transformJson(data,duration);    
+    
     // split the data set into ohlc and Quantity
     var ohlc = [],
         Quantity = [],
@@ -53,6 +54,7 @@ $.getJSON('trades1.json', function (data) {
 
         i = 0;
 
+    var latestPrice = data[dataLength-1][4];
     for (i; i < dataLength; i += 1) {
         ohlc.push([
             data[i][0], // the date
@@ -93,10 +95,9 @@ $.getJSON('trades1.json', function (data) {
     var chart1 = Highcharts.stockChart('container', {
     chart: {
         zoomType: 'x',
+        margin: [10, 80,10, 10],
         resetZoomButton: {
             position: {
-                // align: 'right', // by default
-                // verticalAlign: 'top', // by default
                 x: 0,
                 y: -100
             }
@@ -163,31 +164,44 @@ $.getJSON('trades1.json', function (data) {
             text: 'Price and Quantity'
         },
 
-        yAxis: [{
+        yAxis:[{
             labels: {
                 align: 'right',
-                x: -3
+                x: 40,
+                y: 5
             },
-            title: {
-                text: 'Price'
-            },
-            height: '60%',
+            // title: {
+            //     text: 'Price'
+            // },
+            height: '100%',
             lineWidth: 2,
             resize: {
                 enabled: true
-            }
-        }, {
+            },plotLines: [{
+                value: latestPrice,
+                color: 'green',
+                dashStyle: 'shortdash',
+                width: 2,
+                label: {
+                    align: 'right',
+                    text: latestPrice,
+                    x: 60,
+                    y: 5
+                }
+            }]
+        }
+        , {
             labels: {
-                align: 'right',
-                x: -3
+                enabled:false,
             },
-            title: {
-                text: 'Quantity'
-            },
-            top: '65%',
-            height: '35%',
+            gridLineWidth: 0,
+            minorGridLineWidth: 0,
+            top: '80%',
+            height: '20%',
             offset: 0,
-            lineWidth: 2
+            lineWidth: 0,
+            minorTickLength: 0,
+            tickLength: 0
         }],
 
         tooltip: {
@@ -209,6 +223,10 @@ $.getJSON('trades1.json', function (data) {
             dataGrouping: {
                 units: groupingUnits
             }
+        },{
+            type: 'line',
+            name: 'Current',
+            data: latestPrice,            
         }]
     });
 
@@ -261,16 +279,14 @@ $.getJSON('trades1.json', function (data) {
         new_qty.push([
             newData[i][0], // the date
             newData[i][5] // the Quantity
-        ]);
-        console.log('quantity');
+        ]);        
     }
       chart1.series[0].setData(new_ohlc);
       chart1.series[1].setData(new_qty);
-    });
-    
-    // $('.highcharts-range-selector-group').attr('transform',"translate(60,37)");
+    });    
 });
 
+//json manipulation
 function transformJson(data,duration){
     var timestampDuration =duration * 60 * 1000;
     var res= [];    
@@ -306,9 +322,8 @@ function transformJson(data,duration){
     return res;
 }
 
-function getValuesFromArray(startTime,tmpArray){    
-    var openValue,highValue,closeValue,lowValue;        
-
+//get openPrice, closePrice, highestPrice, lowestPrice
+function getValuesFromArray(startTime,tmpArray){        
     var priceArray = tmpArray.map(function(el){return el.price});
     
     var lowestPrice = Math.min(...priceArray);
@@ -339,6 +354,7 @@ function getValuesFromArray(startTime,tmpArray){
     return tmpRes;
 }
 
+//sort array
 function custom_sort(a, b) {    
     return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
 }

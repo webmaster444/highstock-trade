@@ -28,7 +28,7 @@ $.getJSON('trades1.json', function (data) {
     
     var org_data = data;
 
-    var duration = 1;
+    var duration = 5;
     var data = transformJson(data,duration);         
     // split the data set into ohlc and Quantity
     var ohlc = [],
@@ -66,16 +66,15 @@ $.getJSON('trades1.json', function (data) {
     // Highcharts.RangeSelector.prototype.render = function (min, max) {
     //     orgHighchartsRangeSelectorPrototypeRender.apply(this, [min, max]);
     //     var leftPosition = this.chart.plotLeft,
-    //         topPosition = this.chart.plotTop+5,
+    //         topPosition = this.chart.plotTop,
     //         space = 2;
     //     this.zoomText.attr({
-    //         x: leftPosition,
-    //         y: topPosition + 15
+    //         x: leftPosition
     //     });
     //     leftPosition += this.zoomText.getBBox().width;
     //     for (var i = 0; i < this.buttons.length; i++) {
     //         this.buttons[i].attr({
-    //             x: leftPosition,
+    //             x: leftPosition+120,
     //             y: topPosition 
     //         });
     //         leftPosition += this.buttons[i].width + space;
@@ -84,15 +83,73 @@ $.getJSON('trades1.json', function (data) {
 
     // create the chart
     var chart1 = Highcharts.stockChart('container', {
+    chart: {
+        zoomType: 'x',
+        resetZoomButton: {
+            position: {
+                // align: 'right', // by default
+                // verticalAlign: 'top', // by default
+                x: 0,
+                y: -100
+            }
+        }
+    },
     plotOptions: {
         candlestick: {
             color: 'green',
             upColor: 'red'
         }
     },
-        rangeSelector: {
-            selected: 1,
+    rangeSelector: {
+        buttons: [{
+            count: 1,
+            type: 'minute',
+            text: '1m'
+        }, {
+            count: 5,
+            type: 'minute',
+            text: '5m'
         },
+         {
+            count: 15,
+            type: 'minute',
+            text: '15m'
+        },
+         {
+            count: 30,
+            type: 'minute',
+            text: '30m'
+        },
+         {
+            count: 1,
+            type: 'hr',
+            text: '1H'
+        },
+         {
+            count: 1,
+            type: 'day',
+            text: '1D'
+        }, {
+            count: 3,
+            type: 'day',
+            text: '3D'
+        }, {
+            count: 1,
+            type: 'week',
+            text: '1W'
+        }, {
+            count: 1,
+            type: 'month',
+            text: '1M'
+        }, {
+            type: 'all',
+            text: 'All'
+        }],
+        inputEnabled: false,
+        selected: 9,
+        x: 100,
+        y: 20
+    },
 
         title: {
             text: 'Price and Quantity'
@@ -196,13 +253,14 @@ $.getJSON('trades1.json', function (data) {
         new_qty.push([
             newData[i][0], // the date
             newData[i][5] // the Quantity
-        ]);        
+        ]);
+        console.log('quantity');
     }
-      chart1.series[0].setData(new_ohlc);
-      chart1.series[1].setData(new_qty);
+      chart1.series[0].setData(newData);
+      chart1.series[1].setData(newData);
     });
     
-    $('.highcharts-range-selector-group').attr('transform',"translate(60,37)");
+    // $('.highcharts-range-selector-group').attr('transform',"translate(60,37)");
 });
 
 function transformJson(data,duration){

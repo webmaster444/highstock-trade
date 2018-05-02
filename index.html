@@ -264,8 +264,8 @@ $.getJSON('trades1.json', function (data) {
         ]);
         console.log('quantity');
     }
-      chart1.series[0].setData(newData);
-      chart1.series[1].setData(newData);
+      chart1.series[0].setData(new_ohlc);
+      chart1.series[1].setData(new_qty);
     });
     
     // $('.highcharts-range-selector-group').attr('transform',"translate(60,37)");

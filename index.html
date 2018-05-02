@@ -5,41 +5,204 @@
 <body>
 <div id="container" style="height: 800px; min-width: 310px"></div>
 <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
-<script src="https://code.highcharts.com/stock/highstock.js"></script>
+<script src="highstock.js"></script>
 <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
 <script src="assets/themes/dark-unica.js"></script>
 
 <script>
-$.getJSON('sample-json.json', function (data) {
+// $.getJSON('sample-json.json', function (data) {
+$.getJSON('trades1.json', function (data) {            
+    data.sort(custom_sort);
+    
+    var duration = 5;
+    var data = transformJson(data,duration);     
+    // split the data set into ohlc and Quantity
+    var ohlc = [],
+        Quantity = [],
+        dataLength = data.length,
+        // set the allowed units for data grouping
+        groupingUnits = [[
+            'minute',                         // unit name
+            [10,15,30]                             // allowed multiples
+        ], [
+            'hour',
+            [1,2,3,4]
+        ]],
+
+        i = 0;
+
+    // for(var i=0;i<data.length;i++){
+    //     var timestamp1 = Date.parse(data[i]['timestamp']);
+    //     var price1 = data[i]['price'];
+    //     ohlc.push([timestamp1,price1]);
+
+    //     var qty1 = data[i]['qty'];
+    //     Quantity.push([timestamp1,qty1]);
+    // }
+    for (i; i < dataLength; i += 1) {
+        ohlc.push([
+            data[i][0], // the date
+            data[i][1], // open
+            data[i][2], // high
+            data[i][3], // low
+            data[i][4] // close
+        ]);
+
+        Quantity.push([
+            data[i][0], // the date
+            data[i][5] // the Quantity
+        ]);
+    }
+
+    
+    // console.log(Quantity);
     // create the chart
     Highcharts.stockChart('container', {
-
 
         rangeSelector: {
             selected: 1
         },
 
         title: {
-            text: 'AAPL Stock Price'
+            text: 'Price and Quantity'
+        },
+
+        yAxis: [{
+            labels: {
+                align: 'right',
+                x: -3
+            },
+            title: {
+                text: 'Price'
+            },
+            height: '60%',
+            lineWidth: 2,
+            resize: {
+                enabled: true
+            }
+        }, {
+            labels: {
+                align: 'right',
+                x: -3
+            },
+            title: {
+                text: 'Quantity'
+            },
+            top: '65%',
+            height: '35%',
+            offset: 0,
+            lineWidth: 2
+        }],
+
+        tooltip: {
+            split: true
         },
 
         series: [{
             type: 'candlestick',
-            name: 'AAPL Stock Price',
-            data: data,
+            name: 'Price',
+            data: ohlc,
             dataGrouping: {
-                units: [
-                    [
-                        'week', // unit name
-                        [1] // allowed multiples
-                    ], [
-                        'month',
-                        [1, 2, 3, 4, 6]
-                    ]
-                ]
+                units: groupingUnits
+            }
+        }, {
+            type: 'column',
+            name: 'Quantity',
+            data: Quantity,
+            yAxis: 1,
+            dataGrouping: {
+                units: groupingUnits
             }
         }]
     });
 });
+
+function transformJson(data,duration){
+    var timestampDuration =duration * 60 * 1000;
+    var res= [];    
+    var resObj = {};
+    var date = [];
+    for(var i=0;i<data.length;i++){
+        var timestamp1 = Date.parse(data[i]['timestamp']);    
+        date.push(timestamp1)
+    }
+    var minDate = Math.min.apply(null, date);
+    var maxDate = Math.max.apply(null, date);
+    
+    minDate = minDate - minDate%timestampDuration;
+    maxDate = maxDate - maxDate % timestampDuration + timestampDuration;
+
+    for(var i=minDate;i<=maxDate;i+=timestampDuration){
+        var tmp = [];
+        tmp[i] = i;                
+        // res.push(tmp);        
+        var x = i.toString();        
+        resObj[x] = [];
+
+    }    
+    // console.log(resObj);
+    for(var i=0;i<data.length;i++){        
+        var x = Date.parse(data[i]['timestamp']) - Date.parse(data[i]['timestamp']) % timestampDuration;    
+        resObj[x].push(data[i]);
+    }
+
+    for (var key in resObj) {        
+        if(resObj[key]==''){
+            // var tmp = [key,0,0,0,0,0];            
+        }else{
+            var tmp = getValuesFromArray(key,resObj[key]);
+        }
+        res.push(tmp);
+    }    
+    return res;
+}
+
+function getValuesFromArray(startTime,tmpArray){
+    // console.log(startTime);
+    console.log(tmpArray);
+    var openValue,highValue,closeValue,lowValue;    
+    // var t =[ { "room": { "price": 217, "available": true } }, { "room": { "price": 302, "available": true, } }, { "room": { "price": 427, "available": true, } } ]
+
+    var priceArray = tmpArray.map(function(el){return el.price});
+    console.log(priceArray);
+    var lowestPrice = Math.min(...priceArray);
+    var highestPrice = Math.max(...priceArray);
+    
+
+    // var highestPrice = tmpArray.map(function(el){return el.price}).reduce(function(el){return Math.max(el)});    
+    console.log(tmpArray.map(function(el){return el.price}))
+    console.log(lowestPrice+':'+highestPrice);
+    var startDate = tmpArray.map(function(el){return Date.parse(el.timestamp)}).reduce(function(el){return Math.max(el)});    
+    var endDate = tmpArray.map(function(el){return Date.parse(el.timestamp)}).reduce(function(el){return Math.max(el)});    
+    var qty = tmpArray.map(function(el){return el.qty}).reduce(function(el){return Math.max(el)});    
+
+    var openPrice = 0, closePrice = 0;
+    // the code you're looking for
+    var needle = 'AL';
+
+    // iterate over each element in the array
+    for (var i = 0; i < tmpArray.length; i++){
+      // look for the entry with a matching `code` value
+      if (Date.parse(tmpArray[i].timestamp) == startDate){        
+        openPrice = tmpArray[i]['price'];
+      }
+    }
+
+    for (var i = 0; i < tmpArray.length; i++){
+      // look for the entry with a matching `code` value
+      if (Date.parse(tmpArray[i].timestamp) == endDate){        
+        closePrice = tmpArray[i]['price'];
+      }
+    }
+
+    var tmpRes = [startTime,openPrice,highestPrice,lowestPrice,closePrice,qty];    
+    return tmpRes;
+}
+
+function custom_sort(a, b) {    
+    return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+}
+
 </script>
 </body>
+

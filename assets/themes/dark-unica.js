@@ -10,12 +10,12 @@
 'use strict';
 /* global document */
 // Load the fonts
-import Highcharts from '../parts/Globals.js';
-Highcharts.createElement('link', {
-    href: 'https://fonts.googleapis.com/css?family=Unica+One',
-    rel: 'stylesheet',
-    type: 'text/css'
-}, null, document.getElementsByTagName('head')[0]);
+// import Highcharts from '../parts/Globals.js';
+// Highcharts.createElement('link', {
+//     href: 'https://fonts.googleapis.com/css?family=Unica+One',
+//     rel: 'stylesheet',
+//     type: 'text/css'
+// }, null, document.getElementsByTagName('head')[0]);
 
 Highcharts.theme = {
     colors: ['#2b908f', '#90ee7e', '#f45b5b', '#7798BF', '#aaeeee', '#ff0066',

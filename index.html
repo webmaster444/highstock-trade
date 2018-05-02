@@ -49,7 +49,14 @@ $.getJSON('trades1.json', function (data) {
     Highcharts.stockChart('container', {
 
         rangeSelector: {
-            selected: 1
+            selected: 1,
+            buttonTheme: {
+                visibility: 'hidden'
+            },
+            labelStyle: {
+                visibility: 'hidden'
+            },
+            inputEnabled: false
         },
 
         title: {

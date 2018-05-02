@@ -136,8 +136,8 @@ function transformJson(data,duration){
         var tmp = [];
         tmp[i] = i;                
         // res.push(tmp);        
-        var x = i.toString();        
-        resObj[x] = [];
+        // var x = i.toString();          
+        resObj[i] = [];
 
     }    
     // console.log(resObj);
@@ -157,29 +157,20 @@ function transformJson(data,duration){
     return res;
 }
 
-function getValuesFromArray(startTime,tmpArray){
-    // console.log(startTime);
-    console.log(tmpArray);
-    var openValue,highValue,closeValue,lowValue;    
-    // var t =[ { "room": { "price": 217, "available": true } }, { "room": { "price": 302, "available": true, } }, { "room": { "price": 427, "available": true, } } ]
+function getValuesFromArray(startTime,tmpArray){    
+    var openValue,highValue,closeValue,lowValue;        
 
     var priceArray = tmpArray.map(function(el){return el.price});
     console.log(priceArray);
     var lowestPrice = Math.min(...priceArray);
     var highestPrice = Math.max(...priceArray);
-    
 
-    // var highestPrice = tmpArray.map(function(el){return el.price}).reduce(function(el){return Math.max(el)});    
-    console.log(tmpArray.map(function(el){return el.price}))
-    console.log(lowestPrice+':'+highestPrice);
     var startDate = tmpArray.map(function(el){return Date.parse(el.timestamp)}).reduce(function(el){return Math.max(el)});    
     var endDate = tmpArray.map(function(el){return Date.parse(el.timestamp)}).reduce(function(el){return Math.max(el)});    
     var qty = tmpArray.map(function(el){return el.qty}).reduce(function(el){return Math.max(el)});    
 
-    var openPrice = 0, closePrice = 0;
-    // the code you're looking for
-    var needle = 'AL';
-
+    var openPrice = 0, closePrice = 0;    
+    
     // iterate over each element in the array
     for (var i = 0; i < tmpArray.length; i++){
       // look for the entry with a matching `code` value
@@ -195,7 +186,7 @@ function getValuesFromArray(startTime,tmpArray){
       }
     }
 
-    var tmpRes = [startTime,openPrice,highestPrice,lowestPrice,closePrice,qty];    
+    var tmpRes = [parseFloat(startTime),openPrice,highestPrice,lowestPrice,closePrice,qty];    
     return tmpRes;
 }
 

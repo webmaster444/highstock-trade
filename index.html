@@ -10,13 +10,11 @@
 <script src="assets/themes/dark-unica.js"></script>
 
 <script>
-// $.getJSON('sample-json.json', function (data) {
 $.getJSON('trades1.json', function (data) {            
     data.sort(custom_sort);
     
     var duration = 5;
     var data = transformJson(data,duration);     
-    
     // split the data set into ohlc and Quantity
     var ohlc = [],
         Quantity = [],
@@ -24,7 +22,7 @@ $.getJSON('trades1.json', function (data) {
         // set the allowed units for data grouping
         groupingUnits = [[
             'minute',                         // unit name
-            [10,15,30]                             // allowed multiples
+            [10,15,30]                        // allowed multiples
         ], [
             'hour',
             [1,2,3,4]
@@ -46,7 +44,7 @@ $.getJSON('trades1.json', function (data) {
             data[i][5] // the Quantity
         ]);
     }
-
+    
     // create the chart
     Highcharts.stockChart('container', {
 
@@ -135,8 +133,8 @@ function transformJson(data,duration){
     }
 
     for (var key in resObj) {        
-        if(resObj[key]!''){
-            var tmp = getValuesFromArray(key,resObj[key]);
+        if(resObj[key]!=''){
+            var tmp = getValuesFromArray(key,resObj[key]);        
         }
         res.push(tmp);
     }    

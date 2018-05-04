@@ -234,10 +234,6 @@
                     dataGrouping: {
                         units: [['minute',[10]]]
                     }
-                }, {
-                    type: 'line',
-                    name: 'Current',
-                    data: latestPrice,
                 }]
             });
 
@@ -303,6 +299,16 @@
                     type: 'candlestick',
                     name: 'Price',
                     data: ohlc,
+                    dataGrouping: {
+                        units: new_grouping_unit
+                    }
+                });
+                chart1.addSeries({
+                    type: 'column',
+                    name: 'Volume',
+                    data: volume,
+                    color: 'green',
+                    yAxis: 1,
                     dataGrouping: {
                         units: new_grouping_unit
                     }

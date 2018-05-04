@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <head>
 <meta charset="utf-8">
-<title>Price and Quantity CandleStick Chart</title>
+<title>Price and Volume CandleStick Chart</title>
 <style>
 #candle_sector{
     position: absolute;
     left: 20px;
     top: 75px;
+}
+.highcharts-plot-line-label{
+    fill: white;
 }
 </style>
 </head>
@@ -39,21 +42,22 @@ $.getJSON('trades1.json', function (data) {
     var duration = 1;
     var data = transformJson(data,duration);    
     
-    // split the data set into ohlc and Quantity
+    // split the data set into ohlc and Volume
     var ohlc = [],
-        Quantity = [],
+        positive_volume = [],negative_volume=[],
         dataLength = data.length,
         // set the allowed units for data grouping
         groupingUnits = [[
             'minute',                         // unit name
-            [10,15,30]                        // allowed multiples
+            [1,5,15,30]                        // allowed multiples
         ], [
             'hour',
-            [1,2,3,4]
-        ]],
+            [1]
+        ],['day',[1,3]],['week',[1]],['month',[1]]],
 
         i = 0;
 
+    console.log(data);
     var latestPrice = data[dataLength-1][4];
     for (i; i < dataLength; i += 1) {
         ohlc.push([
@@ -63,14 +67,21 @@ $.getJSON('trades1.json', function (data) {
             data[i][3], // low
             data[i][4] // close
         ]);
-
-        Quantity.push([
-            data[i][0], // the date
-            data[i][5] // the Quantity
-        ]);
-        console.log('quantity');
+        // console.log(ohlc);
+        // console.log(data[i][1]+':'+data[i][4]);
+        if(data[i][1]>=data[i][4]){
+            positive_volume.push([
+                data[i][0], // the date
+                data[i][5] // the Volume
+            ]); 
+        }else{
+            negative_volume.push([
+                data[i][0], // the date
+                data[i][5] // the Volume
+            ]); 
+        }               
     }
-    
+
     //move the position of zoom tools
     // var orgHighchartsRangeSelectorPrototypeRender = Highcharts.RangeSelector.prototype.render;
     // Highcharts.RangeSelector.prototype.render = function (min, max) {
@@ -161,7 +172,7 @@ $.getJSON('trades1.json', function (data) {
     },
 
         title: {
-            text: 'Price and Quantity'
+            text: 'Price and Volume'
         },
 
         yAxis:[{
@@ -207,7 +218,9 @@ $.getJSON('trades1.json', function (data) {
         tooltip: {
             split: true
         },
-
+        navigator: {
+            enabled: false
+        },        
         series: [{
             type: 'candlestick',
             name: 'Price',
@@ -217,13 +230,25 @@ $.getJSON('trades1.json', function (data) {
             }
         }, {
             type: 'column',
-            name: 'Quantity',
-            data: Quantity,
+            name: 'Volume',
+            data: positive_volume,
+            color: 'green',
             yAxis: 1,
             dataGrouping: {
                 units: groupingUnits
             }
-        },{
+        }
+        ,{
+            type: 'column',
+            name: 'Volume',
+            // color: 'red',
+            data: negative_volume,
+            yAxis: 1,
+            dataGrouping: {
+                units: groupingUnits
+            }
+        }
+        ,{
             type: 'line',
             name: 'Current',
             data: latestPrice,            
@@ -231,58 +256,58 @@ $.getJSON('trades1.json', function (data) {
     });
 
     $('#candle_sector').change(function() {      
-      var candleV = $('#candle_sector').val();
-      switch(candleV){
-        case '1min':            
-            duration = 1;            
-            break;
-        case '5min':
-            duration = 5;
-            break;
-        case '15min':            
-            duration = 15;            
-            break;
-        case "30min":            
-            duration = 30;            
-            break;
-        case "1hr":            
-            duration = 60;            
-            break;       
-        case "1d":            
-            duration = 60 * 24;            
-            break;        
-        case "3d":            
-            duration = 60 * 24 * 3;            
-            break;        
-        case "1w":            
-            duration = 60 * 24 * 7;            
-            break;
-        case "1m":            
-            duration = 60 * 24 * 30;            
-            break;
-        default:
-            break;
-      }
-    var newData = transformJson(org_data,duration);
+    //   var candleV = $('#candle_sector').val();
+    //   switch(candleV){
+    //     case '1min':            
+    //         duration = 1;            
+    //         break;
+    //     case '5min':
+    //         duration = 5;
+    //         break;
+    //     case '15min':            
+    //         duration = 15;            
+    //         break;
+    //     case "30min":            
+    //         duration = 30;            
+    //         break;
+    //     case "1hr":            
+    //         duration = 60;            
+    //         break;       
+    //     case "1d":            
+    //         duration = 60 * 24;            
+    //         break;        
+    //     case "3d":            
+    //         duration = 60 * 24 * 3;            
+    //         break;        
+    //     case "1w":            
+    //         duration = 60 * 24 * 7;            
+    //         break;
+    //     case "1m":            
+    //         duration = 60 * 24 * 30;            
+    //         break;
+    //     default:
+    //         break;
+    //   }
+    // var newData = transformJson(org_data,duration);
 
-    var new_ohlc = [];
-    var new_qty = [];
-    for (var i=0; i < newData.length; i += 1) {
-        new_ohlc.push([
-            newData[i][0], // the date
-            newData[i][1], // open
-            newData[i][2], // high
-            newData[i][3], // low
-            newData[i][4] // close
-        ]);
+    // var new_ohlc = [];
+    // var new_qty = [];
+    // for (var i=0; i < newData.length; i += 1) {
+    //     new_ohlc.push([
+    //         newData[i][0], // the date
+    //         newData[i][1], // open
+    //         newData[i][2], // high
+    //         newData[i][3], // low
+    //         newData[i][4] // close
+    //     ]);
 
-        new_qty.push([
-            newData[i][0], // the date
-            newData[i][5] // the Quantity
-        ]);        
-    }
-      chart1.series[0].setData(new_ohlc);
-      chart1.series[1].setData(new_qty);
+    //     new_qty.push([
+    //         newData[i][0], // the date
+    //         newData[i][5] // the Volume
+    //     ]);        
+    // }
+    //   chart1.series[0].setData(new_ohlc);
+    //   chart1.series[1].setData(new_qty);
     });    
 });
 

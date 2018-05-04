@@ -64,8 +64,7 @@
                 ],
 
                 i = 0;
-
-            console.log(data);
+            
             var latestPrice = data[dataLength - 1][4];
             for (i; i < dataLength; i += 1) {
                 ohlc.push([
@@ -78,31 +77,12 @@
                 // console.log(ohlc);
                 // console.log(data[i][1]+':'+data[i][4]);
                 
-                volume.push([
-                    data[i][0], // the date
-                    data[i][5] // the Volume
-                ]);                
+                volume.push({
+                    x: data[i][0], // the date
+                    y: data[i][5], // the Volume
+                    color: '#111111'
+                });                
             }
-
-            //move the position of zoom tools
-            // var orgHighchartsRangeSelectorPrototypeRender = Highcharts.RangeSelector.prototype.render;
-            // Highcharts.RangeSelector.prototype.render = function (min, max) {
-            //     orgHighchartsRangeSelectorPrototypeRender.apply(this, [min, max]);
-            //     var leftPosition = this.chart.plotLeft,
-            //         topPosition = this.chart.plotTop,
-            //         space = 2;
-            //     this.zoomText.attr({
-            //         x: leftPosition
-            //     });
-            //     leftPosition += this.zoomText.getBBox().width;
-            //     for (var i = 0; i < this.buttons.length; i++) {
-            //         this.buttons[i].attr({
-            //             x: leftPosition+120,
-            //             y: topPosition 
-            //         });
-            //         leftPosition += this.buttons[i].width + space;
-            //     }
-            // };
 
             // create the chart
             var chart1 = Highcharts.stockChart('container', {
@@ -114,8 +94,58 @@
                             x: 0,
                             y: -100
                         }
-                    }
-                },
+                    },                    
+                    events: {                                                                        
+                        load: function(event) {
+                            // Get the volume series by id.
+                            var volSeries = this.series.find(function(s) {
+                            return s.userOptions.id === 'volume';
+                            });            
+                            
+                            // Override the poitAttribs function on the volume series.
+                            volSeries.pointAttribs = (function(original) {                
+                            return function(point, state) {                                                    
+                                // Call the original pointAttribs function.
+                                var attribs = original.apply(this, arguments);
+
+                                // Get the price series using the id.
+                                var priceSeries = point.series.chart.series.find(function(s) {
+                                return s.userOptions.id === 'price';
+                                });
+
+                                // console.log(priceSeries);
+                                // Find the candle corresponding to the current volume point.
+                                var candle;
+                                if (point.series.hasGroupedData) {
+                                // With grouped data, we need to find the candle from the grouped data.
+                                var datagroup = point.dataGroup;
+                                var groupIdx = point.series.groupMap.indexOf(datagroup);
+
+                                candle = priceSeries.groupedData[groupIdx];
+                                } else {
+                                // Non-grouped data, we can just use the normal data.
+                                candle = priceSeries.data[point.index];
+                                }
+
+                                // Choose the color for the volume point based on the candle properties.
+                                var color = 'green';
+                                if (candle.close > candle.open) {
+                                color = 'green';
+                                } else if (candle.close < candle.open) {
+                                color = 'red';
+                                }
+                                // Set the volume point's attribute(s) accordingly.
+                                attribs.fill = color;
+                                // Return the updated attributes.
+                                return attribs;
+                                            
+                            };
+                            })(volSeries.pointAttribs);
+                            // Need to call update so the changes get taken into account on first draw.
+                            this.update({});
+                        }
+                    }            
+                },                
                 plotOptions: {
                     candlestick: {
                         color: 'green',
@@ -216,21 +246,25 @@
                 navigator: {
                     enabled: false
                 },
+                scrollbar:{
+                    // enabled: false
+                },
                 series: [{
                     type: 'candlestick',
                     name: 'Price',
-                    data: ohlc,
+                    id: 'price',
+                    data: ohlc,                    
                     dataGrouping: {
                         units: [
                             ['minute', [10]]
                         ]
                     }
-                }, {
+                },{
                     type: 'column',
                     name: 'Volume',
-                    data: volume,
-                    color: 'green',
-                    yAxis: 1,
+                    data: volume,                    
+                    yAxis: 1,        
+                    id: 'volume',           
                     dataGrouping: {
                         units: [['minute',[10]]]
                     }
@@ -298,6 +332,7 @@
                 chart1.addSeries({
                     type: 'candlestick',
                     name: 'Price',
+                    id:'price',
                     data: ohlc,
                     dataGrouping: {
                         units: new_grouping_unit
@@ -307,7 +342,7 @@
                     type: 'column',
                     name: 'Volume',
                     data: volume,
-                    color: 'green',
+                    id: 'volume',                    
                     yAxis: 1,
                     dataGrouping: {
                         units: new_grouping_unit

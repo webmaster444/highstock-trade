@@ -389,7 +389,22 @@
                 chart1.update({});           
             });
 
-            // $('.highcharts-plot-lines-0').append('<img src="arr.svg" height="64px" width="64px">');
+            var plot_line_label = $('.highcharts-plot-line-label');
+
+            console.log(plot_line_label.attr('x'));
+            var xmlns = "http://www.w3.org/2000/svg";
+            var svg_img = document.createElementNS(xmlns,"image");
+            svg_img.href.baseVal = 'arr.svg';
+            svg_img.setAttributeNS(null,"x",plot_line_label.attr('x') - 70);
+            svg_img.setAttributeNS(null,"y",plot_line_label.attr('y') - 20);
+            
+            svg_img.setAttributeNS(null,"width","80px");
+            svg_img.setAttributeNS(null,"height","30px");
+
+            var svg_obj = $('#container').find('svg');
+            svg_obj.append(svg_img);
+            // svg_obj.appendChild('<image xlink:href="arr.svg" x="1050" y="462" height="30px" width="80px" />');                        
+            svg_obj.append(plot_line_label);
         });
 
         //json manipulation
